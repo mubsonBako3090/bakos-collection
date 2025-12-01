@@ -1,0 +1,14 @@
+/* Basic styling for search bar */
+input[type="text"] {
+  border-radius: 8px;
+  padding: 10px 15px;
+  border: 1px solid #ced4da;
+  transition: border-color 0.2s ease;
+}
+
+input[type="text"]:focus {
+  outline: none;
+  border-color: #2c5aa0;
+  box-shadow: 0 0 5px rgba(44, 90, 160, 0.3);
+}
+

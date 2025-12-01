@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import styles from './ProductCard.module.css';
-
+  import { useCart } from '@/contexts/CartContext';
 export default function ProductCard({ product }) {
   const [isFavorite, setIsFavorite] = useState(false);
 
@@ -12,6 +12,18 @@ export default function ProductCard({ product }) {
       currency: 'NGN',
     }).format(price);
   };
+
+
+// inside component
+const { addToCart } = useCart();
+
+<button
+  className="btn btn-sm btn-outline-primary"
+  onClick={() => addToCart(product)}
+>
+  <i className="bi bi-cart-plus"></i> Add
+</button>
+
 
   return (
     <div className={`card ${styles.productCard}`} data-aos="flip-left">

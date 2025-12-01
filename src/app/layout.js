@@ -2,6 +2,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'aos/dist/aos.css';
 import '../styles/globals.css';
+import { CartProvider } from '@/contexts/CartContext';
 
 export const metadata = {
   title: "Bako's Collection - Nigeria E-Commerce",
@@ -11,9 +12,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
  <html lang="en">
- <body>
-        {children}
- </body>
+  <body>
+        <CartProvider>{children}</CartProvider>
+      </body>
  </html>
  );
 }

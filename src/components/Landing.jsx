@@ -2,10 +2,10 @@
 
 import { useEffect } from 'react';
 import AOS from 'aos';
-import Navbar from '@/components/Navbar/Navbar';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import ProductCard from '@/components/ProductCard/ProductCard';
 import styles from '@/styles/Home.module.css';
+import Navbar from './Navbar/Navbar';
 
 export default function LandingPage() {
   useEffect(() => {
@@ -18,21 +18,28 @@ export default function LandingPage() {
       name: 'Premium Art Piece',
       price: 15000,
       category: 'Art',
-      image: '/images/art1.webp',
+      image: '/gool.jpg',
     },
     {
       id: 2,
       name: 'Designer Fashion',
       price: 8000,
       category: 'Fashion',
-      image: '/images/fashion1.webp',
+      image: '/art/art.webp',
     },
     {
       id: 3,
       name: 'Smartphone',
       price: 120000,
       category: 'Phones',
-      image: '/images/phone1.webp',
+      image: '/too.png',
+    },
+     {
+      id: 4,
+      name: 'furnitures',
+      price: 80000,
+      category: 'Fashion',
+      image: '/1.jpg',
     },
   ];
 
@@ -78,6 +85,7 @@ export default function LandingPage() {
                   'Phones',
                   'Digital Assets',
                   'Game Items',
+                  `furnitures`,
                 ].map((category, index) => (
                   <div key={category} className="col-md-2 col-6 mb-3">
                     <div
