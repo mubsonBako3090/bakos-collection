@@ -1,0 +1,481 @@
+Excellent! This is a comprehensive and well-structured e-commerce platform. I'll help you build Bako's Collection with all the features you've specified. Let me create a complete project structure and implementation plan.
+
+🚀 Project Structure
+
+
+ bakos-collection/
+├── app/
+ ├── layout.jsx
+ ├── page.jsx
+ ├── globals.css
+ ├── products/
+  ├── page.jsx
+  ├── [id]/
+   └── page.jsx
+    └── category/
+  └── [category]/
+  └── page.jsx
+ ├── auth/
+  ├── login/
+   └── page.jsx
+  ├── register/
+   └── page.jsx
+  └── reset-password/
+  └── page.jsx
+ ├── cart/
+  └── page.jsx
+ ├── checkout/
+  └── page.jsx
+ ├── admin/
+  ├── page.jsx
+  ├── products/
+   └── page.jsx
+  └── orders/
+  └── page.jsx
+ └── user/
+ ├── profile/
+  └── page.jsx
+ └── orders/
+ └── page.jsx
+├── components/
+ ├── Navbar/
+  ├── Navbar.jsx
+  └── Navbar.module.css
+ ├── Sidebar/
+  ├── Sidebar.jsx
+  └── Sidebar.module.css
+ ├── ProductCard/
+  ├── ProductCard.jsx
+  └── ProductCard.module.css
+ ├── SearchBar/
+  ├── SearchBar.jsx
+  └── SearchBar.module.css
+ └── Footer/
+ ├── Footer.jsx
+ └── Footer.module.css
+├── lib/
+ ├── database.js
+ ├── auth.js
+ └── utils.js
+├── styles/
+ ├── globals.css
+ └── components/
+└── public/
+ ├── images/
+ └── icons/
+
+
+📋 Let's Start Building!
+
+I'll create the core files step by step. Let me begin with the essential configuration and main layout:
+
+1. Package.json & Dependencies
+
+json
+{
+ "name": "bakos-collection",
+ "version": "1.0.0",
+ "scripts": {
+ "dev": "next dev --turbo",
+ "build": "next build",
+ "start": "next start"
+ },
+ "dependencies": {
+ "next": "latest",
+ "react": "latest",
+ "react-dom": "latest",
+ "bootstrap": "^5.3.0",
+ "bootstrap-icons": "^1.11.0",
+ "aos": "^2.3.4",
+ "nodemailer": "^6.9.7",
+ "mongodb": "^6.3.0",
+ "jsonwebtoken": "^9.0.2",
+ "bcryptjs": "^2.4.3",
+ "swr": "^2.2.4"
+ },
+ "devDependencies": {
+ "eslint": "latest",
+ "eslint-config-next": "latest"
+ }
+}
+
+
+2. Root Layout (app/layout.jsx)
+
+jsx
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
+import 'aos/dist/aos.css';
+import '../styles/globals.css';
+
+export const metadata = {
+ title: "Bako's Collection - Nigeria E-Commerce",
+ description: 'Fashion | Digital Assets | Physical Products in Nigeria',
+};
+
+export default function RootLayout({ children }) {
+ return (
+ <html lang="en">
+ <body>
+ {children}
+ </body>
+ </html>
+ );
+}
+
+
+3. Main Page (app/page.jsx)
+
+jsx
+'use client';
+import { useEffect } from 'react';
+import AOS from 'aos';
+import Navbar from '@/components/Navbar/Navbar';
+import Sidebar from '@/components/Sidebar/Sidebar';
+import ProductCard from '@/components/ProductCard/ProductCard';
+import styles from '@/styles/Home.module.css';
+
+export default function Home() {
+ useEffect(() => {
+ AOS.init({ duration: 1000 });
+ }, []);
+
+ const featuredProducts = [
+ {
+ id: 1,
+ name: 'Premium Art Piece',
+ price: 15000,
+ category: 'Art',
+ image: '/images/art1.webp',
+ },
+ {
+ id: 2,
+ name: 'Designer Fashion',
+ price: 8000,
+ category: 'Fashion',
+ image: '/images/fashion1.webp',
+ },
+ {
+ id: 3,
+ name: 'Smartphone',
+ price: 120000,
+ category: 'Phones',
+ image: '/images/phone1.webp',
+ },
+ ];
+
+ return (
+ <div className={styles.container}>
+ <Navbar />
+ <div className="container-fluid">
+ <div className="row">
+ <div className="col-md-3">
+ <Sidebar />
+ </div>
+ <div className="col-md-9">
+ {/* Hero Section */}
+ <section className={`${styles.hero} mb-5`} data-aos="fade-up">
+ <div className={styles.heroContent}>
+ <h1>Welcome to Bako's Collection</h1>
+ <p>Discover the best in Art, Fashion, Digital Assets & More</p>
+ <button className="btn btn-primary btn-lg">Shop Now</button>
+ </div>
+ </section>
+
+ {/* Featured Products */}
+ <section data-aos="fade-up">
+ <h2 className="mb-4">Featured Products</h2>
+ <div className="row">
+ {featuredProducts.map((product) => (
+ <div key={product.id} className="col-lg-4 col-md-6 mb-4">
+ <ProductCard product={product} />
+ </div>
+ ))}
+ </div>
+ </section>
+
+ {/* Categories Section */}
+ <section className="my-5" data-aos="fade-up">
+ <h2 className="mb-4">Shop by Category</h2>
+ <div className="row">
+ {['Art', 'Fashion', 'Phones', 'Digital Assets', 'Game Items'].map((category, index) => (
+ <div key={category} className="col-md-2 col-6 mb-3">
+ <div className={`card ${styles.categoryCard}`} data-aos="zoom-in" data-aos-delay={index * 100}>
+ <div className="card-body text-center">
+ <i className="bi bi-tag fs-1"></i>
+ <h6 className="mt-2">{category}</h6>
+ </div>
+ </div>
+ </div>
+ ))}
+ </div>
+ </section>
+ </div>
+ </div>
+ </div>
+ </div>
+ );
+}
+
+
+. Navbar Component (components/Navbar/Navbar.jsx)
+
+jsx
+'use client';
+import { useState } from 'react';
+import styles from './Navbar.module.css';
+
+export default function Navbar() {
+ const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+ return (
+ <nav className={`navbar navbar-expand-lg ${styles.navbar}`}>
+ <div className="container">
+ <a className="navbar-brand fw-bold" href="/">
+ <i className="bi bi-collection-play me-2"></i>
+ Bako's Collection
+ </a>
+ 
+ <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+ <span className="navbar-toggler-icon"></span>
+ </button>
+ 
+ <div className="collapse navbar-collapse" id="navbarNav">
+ <ul className="navbar-nav me-auto">
+ <li className="nav-item">
+ <a className="nav-link" href="/">Home</a>
+ </li>
+ <li className="nav-item">
+ <a className="nav-link" href="/products">Products</a>
+ </li>
+ <li className="nav-item dropdown">
+ <a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+ Categories
+ </a>
+ <ul className="dropdown-menu">
+ <li><a className="dropdown-item" href="/products/category/art">Art</a></li>
+ <li><a className="dropdown-item" href="/products/category/fashion">Fashion</a></li>
+ <li><a className="dropdown-item" href="/products/category/phones">Phones</a></li>
+ <li><a className="dropdown-item" href="/products/category/digital">Digital Assets</a></li>
+ <li><a className="dropdown-item" href="/products/category/games">Game Items</a></li>
+ </ul>
+ </li>
+ </ul>
+ 
+ <div className="d-flex align-items-center">
+ <a href="/cart" className="btn btn-outline-primary me-2">
+ <i className="bi bi-cart3"></i>
+ <span className="badge bg-danger ms-1">0</span>
+ </a>
+ {isLoggedIn ? (
+ <div className="dropdown">
+ <a className="btn btn-outline-secondary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+ <i className="bi bi-person-circle"></i>
+ </a>
+ <ul className="dropdown-menu">
+ <li><a className="dropdown-item" href="/user/profile">Profile</a></li>
+ <li><a className="dropdown-item" href="/user/orders">Orders</a></li>
+ <li><hr className="dropdown-divider" /></li>
+ <li><a className="dropdown-item" href="#">Logout</a></li>
+ </ul>
+ </div>
+ ) : (
+ <div>
+ <a href="/auth/login" className="btn btn-outline-primary me-2">Login</a>
+ <a href="/auth/register" className="btn btn-primary">Register</a>
+ </div>
+ )}
+ </div>
+ </div>
+ </div>
+ </nav>
+ );
+}
+
+
+5. ProductCard Component (components/ProductCard/ProductCard.jsx)
+
+jsx
+'use client';
+import { useState } from 'react';
+import styles from './ProductCard.module.css';
+
+export default function ProductCard({ product }) {
+ const [isFavorite, setIsFavorite] = useState(false);
+
+ const formatPrice = (price) => {
+ return new Intl.NumberFormat('en-NG', {
+ style: 'currency',
+ currency: 'NGN'
+ }).format(price);
+ };
+
+ return (
+ <div className={`card ${styles.productCard}`} data-aos="flip-left">
+ <div className={styles.imageContainer}>
+ <img 
+ src={product.image} 
+ alt={product.name}
+ className={`card-img-top ${styles.productImage}`}
+ />
+ <button 
+ className={`btn ${styles.favoriteBtn} ${isFavorite ? styles.favoriteActive : ''}`}
+ onClick={() => setIsFavorite(!isFavorite)}
+ >
+ <i className={`bi ${isFavorite ? 'bi-heart-fill' : 'bi-heart'}`}></i>
+ </button>
+ </div>
+ 
+ <div className="card-body">
+ <h6 className="card-title">{product.name}</h6>
+ <p className="card-text text-muted small">{product.category}</p>
+ <div className="d-flex justify-content-between align-items-center">
+ <span className="fw-bold text-primary">{formatPrice(product.price)}</span>
+ <button className="btn btn-sm btn-outline-primary">
+ <i className="bi bi-cart-plus"></i> Add
+ </button>
+ </div>
+ </div>
+ </div>
+ );
+}
+
+
+. Global Styles (styles/globals.css)
+
+css
+:root {
+ --primary-color: #2c5aa0;
+ --secondary-color: #f8f9fa;
+ --accent-color: #ff6b35;
+ --text-dark: #333;
+ --text-light: #6c757d;
+}
+
+* {
+ margin: 0;
+ padding: 0;
+ box-sizing: border-box;
+}
+
+body {
+ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+ background-color: #f8f9fa;
+ color: var(--text-dark);
+}
+
+/* Custom Bootstrap overrides */
+.btn-primary {
+ background-color: var(--primary-color);
+ border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+ background-color: #254a8a;
+ border-color: #254a8a;
+}
+
+.text-primary {
+ color: var(--primary-color) !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+ .container-fluid {
+ padding-left: 10px;
+ padding-right: 10px;
+ }
+}
+
+
+7. Home Page Styles (styles/Home.module.css)
+
+css
+.hero {
+ background: linear-gradient(135deg, var(--primary-color), #4a7bc8);
+ color: white;
+ padding: 80px 0;
+ border-radius: 15px;
+ text-align: center;
+ margin-top: 20px;
+}
+
+.heroContent h1 {
+ font-size: 3rem;
+ font-weight: bold;
+ margin-bottom: 1rem;
+}
+
+.heroContent p {
+ font-size: 1.2rem;
+ margin-bottom: 2rem;
+}
+
+.categoryCard {
+ transition: transform 0.3s ease, box-shadow 0.3s ease;
+ cursor: pointer;
+}
+
+.categoryCard:hover {
+ transform: translateY(-5px);
+ box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.container {
+ min-height: 100vh;
+}
+
+
+8. Next.js Configuration (next.config.js)
+
+js
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+ experimental: {
+ turbo: {
+ rules: {
+ '*.svg': {
+ loaders: ['@svgr/webpack'],
+ as: '*.js',
+ },
+ },
+ },
+ },
+ images: {
+ domains: ['localhost'],
+ formats: ['image/webp'],
+ },
+ async headers() {
+ return [
+ {
+ source: '/(.*)',
+ headers: [
+ {
+ key: 'X-Frame-Options',
+ value: 'DENY',
+ },
+ {
+ key: 'X-Content-Type-Options',
+ value: 'nosniff',
+ },
+ ],
+ },
+ ];
+ },
+};
+
+module.exports = nextConfig;
+
+
+🎯 Next Steps
+
+This gives you a solid foundation! Would you like me to continue with:
+
+1. Database models and connection (MongoDB)
+2. User authentication system (JWT + bcrypt)
+3. Admin panel implementation
+. Payment integration (Paystack/Flutterwave)
+5. Product management system
+. Shopping cart functionality
+
+Which part would you like to focus on next? I'm ready to build out the complete application following your specifications! 🚀

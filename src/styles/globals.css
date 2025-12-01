@@ -1,0 +1,43 @@
+:root {
+ --primary-color: #2c5aa0;
+ --secondary-color: #f8f9fa;
+ --accent-color: #ff6b35;
+ --text-dark: #333;
+ --text-light: #6c757d;
+}
+
+* {
+ margin: 0;
+ padding: 0;
+ box-sizing: border-box;
+}
+
+body {
+ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+ background-color: #f8f9fa;
+ color: var(--text-dark);
+}
+
+/* Custom Bootstrap overrides */
+.btn-primary {
+ background-color: var(--primary-color);
+ border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+ background-color: #254a8a;
+ border-color: #254a8a;
+}
+
+.text-primary {
+ color: var(--primary-color) !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+ .container-fluid {
+ padding-left: 10px;
+ padding-right: 10px;
+ }
+}
+
