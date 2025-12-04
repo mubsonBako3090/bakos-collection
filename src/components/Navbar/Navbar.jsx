@@ -1,31 +1,27 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import styles from './Navbar.module.css';
-import jwt_decode from 'jwt-decode'; // make sure you installed jwt-decode
 
 export default function Navbar() {
+  const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState(null);
+  const [cartCount, setCartCount] = useState(0);
 
+  // Check login status
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        const decoded = jwt_decode(token);
-        setUser(decoded);
-        setIsLoggedIn(true);
-      } catch {
-        setIsLoggedIn(false);
-        setUser(null);
-      }
-    }
+    setIsLoggedIn(!!token);
+
+    // Load cart count from localStorage or API
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    setCartCount(cart.length);
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     setIsLoggedIn(false);
-    setUser(null);
-    window.location.href = '/'; // redirect home after logout
+    router.push('/auth/login');
   };
 
   return (
@@ -36,12 +32,21 @@ export default function Navbar() {
           Bako's Collection
         </a>
 
-        <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
           <span className="navbar-toggler-icon"></span>
         </button>
 
         <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav me-auto">
+          {/* Left side menu */}
+          <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             <li className="nav-item">
               <a className="nav-link" href="/">Home</a>
             </li>
@@ -49,7 +54,13 @@ export default function Navbar() {
               <a className="nav-link" href="/products">Products</a>
             </li>
             <li className="nav-item dropdown">
-              <a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+              <a
+                className="nav-link dropdown-toggle"
+                href="#"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
                 Categories
               </a>
               <ul className="dropdown-menu">
@@ -62,29 +73,46 @@ export default function Navbar() {
             </li>
           </ul>
 
+          {/* Right side menu */}
           <div className="d-flex align-items-center">
-            <a href="/cart" className="btn btn-outline-primary me-2">
+            {/* Cart */}
+            <a href="/usercart" className="btn btn-outline-primary me-2 position-relative">
               <i className="bi bi-cart3"></i>
-              <span className="badge bg-danger ms-1">0</span>
+              {cartCount > 0 && (
+                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  {cartCount}
+                  <span className="visually-hidden">items in cart</span>
+                </span>
+              )}
             </a>
 
+            {/* Auth */}
             {isLoggedIn ? (
               <div className="dropdown">
-                <a className="btn btn-outline-secondary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                  <i className="bi bi-person-circle"></i> {user?.name || 'User'}
-                </a>
-                <ul className="dropdown-menu">
-                  <li><a className="dropdown-item" href="/user/profile">Profile</a></li>
+                <button
+                  className="btn btn-outline-secondary dropdown-toggle"
+                  type="button"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  <i className="bi bi-person-circle"></i>
+                </button>
+                <ul className="dropdown-menu dropdown-menu-end">
+                  <li><a className="dropdown-item" href="/user/profile">Dashboard</a></li>
                   <li><a className="dropdown-item" href="/user/orders">Orders</a></li>
                   <li><hr className="dropdown-divider" /></li>
-                  <li><button className="dropdown-item" onClick={handleLogout}>Logout</button></li>
+                  <li>
+                    <button className="dropdown-item text-danger" onClick={handleLogout}>
+                      Logout
+                    </button>
+                  </li>
                 </ul>
               </div>
             ) : (
-              <div>
+              <>
                 <a href="/auth/login" className="btn btn-outline-primary me-2">Login</a>
                 <a href="/auth/register" className="btn btn-primary">Register</a>
-              </div>
+              </>
             )}
           </div>
         </div>

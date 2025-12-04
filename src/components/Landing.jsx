@@ -31,8 +31,8 @@ export default function LandingPage() {
       id: 3,
       name: 'Smartphone',
       price: 120000,
-      category: 'Phones',
-      image: '/too.png',
+      category: 'Consumer Electronics',
+      image: '/2.jpg',
     },
      {
       id: 4,
@@ -40,6 +40,20 @@ export default function LandingPage() {
       price: 80000,
       category: 'Fashion',
       image: '/1.jpg',
+    },
+    {
+      id: 5,
+      name: 'furnitures',
+      price: 80000,
+      category: 'Fashion',
+      image: '/too.png',
+    },
+    {
+      id: 6,
+      name: 'furnitures',
+      price: 80000,
+      category: 'Fashion',
+      image: '/3.webp',
     },
   ];
 
@@ -86,6 +100,9 @@ export default function LandingPage() {
                   'Digital Assets',
                   'Game Items',
                   `furnitures`,
+                  `Beauty & Personal Care`,
+                  `Groceries & Everyday Essentials`,
+                  `Automobile Accessories`,
                 ].map((category, index) => (
                   <div key={category} className="col-md-2 col-6 mb-3">
                     <div

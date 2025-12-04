@@ -1,10 +1,12 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -17,42 +19,47 @@ export default function LoginPage() {
       });
 
       const data = await res.json();
-
-      if (res.ok) {
-        localStorage.setItem('token', data.token);
-        setMessage('Login successful!');
-        // redirect to dashboard or home
-        window.location.href = '/';
-      } else {
-        setMessage(data.error);
+      if (!res.ok) {
+        setError(data.error || 'Login failed');
+        return;
       }
+
+      // Save JWT token
+      localStorage.setItem('token', data.token);
+
+      // ✅ Redirect to user dashboard
+      router.push('/user/profile');  // or '/user' depending on your route
     } catch (err) {
-      setMessage('Something went wrong');
+      setError('Something went wrong');
     }
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: '50px auto' }}>
+    <div className="container mt-5">
       <h2>Login</h2>
-      {message && <p>{message}</p>}
+      {error && <p className="text-danger">{error}</p>}
       <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          style={{ width: '100%', marginBottom: 10, padding: 8 }}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          style={{ width: '100%', marginBottom: 10, padding: 8 }}
-        />
-        <button type="submit">Login</button>
+        <div className="mb-3">
+          <label>Email</label>
+          <input 
+            type="email" 
+            className="form-control" 
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)} 
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label>Password</label>
+          <input 
+            type="password" 
+            className="form-control" 
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)} 
+            required
+          />
+        </div>
+        <button className="btn btn-primary">Login</button>
       </form>
     </div>
   );
