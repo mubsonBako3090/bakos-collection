@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import UserLayout from '@/app/user/Layout';
+import UserLayout from '@/app/user/layout';
 import styles from '@/styles/UserDashboard.module.css';
 
 export default function UserProfilePage() {
