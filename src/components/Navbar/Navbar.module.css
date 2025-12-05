@@ -65,4 +65,29 @@
   .navbar .btn {
     margin-bottom: 8px;
   }
+}/* Pulse animation */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+.pulse {
+  animation: pulse 0.3s ease-in-out;
+}
+
+/* Smooth badge count transition */
+.cart-badge-number {
+  display: inline-block;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.cart-badge-number.added {
+  transform: translateY(-10px);
+  opacity: 0;
+}
+
+.cart-badge-number.removed {
+  transform: translateY(10px);
+  opacity: 0;
 }

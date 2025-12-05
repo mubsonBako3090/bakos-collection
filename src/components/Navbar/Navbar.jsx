@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './Navbar.module.css';
 
@@ -7,16 +7,55 @@ export default function Navbar() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [cartCount, setCartCount] = useState(0);
+  const [displayCount, setDisplayCount] = useState(0); // animated display
+  const [pulse, setPulse] = useState(false);
+  const [countClass, setCountClass] = useState('');
+  const prevCartCount = useRef(0);
 
-  // Check login status
   useEffect(() => {
     const token = localStorage.getItem('token');
     setIsLoggedIn(!!token);
 
-    // Load cart count from localStorage or API
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
-    setCartCount(cart.length);
-  }, []);
+    const newCount = cart.length;
+    setCartCount(newCount);
+
+    // Pulse animation if count increased
+    if (newCount > prevCartCount.current) {
+      setPulse(true);
+      setCountClass('added');
+      setTimeout(() => {
+        setPulse(false);
+        setCountClass('');
+      }, 300);
+    }
+
+    // Badge animation if count decreased
+    if (newCount < prevCartCount.current) {
+      setCountClass('removed');
+      setTimeout(() => setCountClass(''), 300);
+    }
+
+    // Animate displayCount smoothly
+    let start = prevCartCount.current;
+    const end = newCount;
+    const stepTime = 50; // ms per step
+    const diff = Math.abs(end - start);
+    if (diff === 0) return;
+
+    const step = end > start ? 1 : -1;
+    let current = start;
+
+    const interval = setInterval(() => {
+      current += step;
+      setDisplayCount(current);
+      if (current === end) clearInterval(interval);
+    }, stepTime);
+
+    prevCartCount.current = newCount;
+
+    return () => clearInterval(interval);
+  }, [cartCount]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -28,8 +67,7 @@ export default function Navbar() {
     <nav className={`navbar navbar-expand-lg ${styles.navbar}`}>
       <div className="container">
         <a className="navbar-brand fw-bold" href="/">
-          <i className="bi bi-collection-play me-2"></i>
-          Bako's Collection
+          <i className="bi bi-collection-play me-2"></i>Bako's Collection
         </a>
 
         <button
@@ -45,7 +83,6 @@ export default function Navbar() {
         </button>
 
         <div className="collapse navbar-collapse" id="navbarNav">
-          {/* Left side menu */}
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             <li className="nav-item">
               <a className="nav-link" href="/">Home</a>
@@ -54,13 +91,7 @@ export default function Navbar() {
               <a className="nav-link" href="/products">Products</a>
             </li>
             <li className="nav-item dropdown">
-              <a
-                className="nav-link dropdown-toggle"
-                href="#"
-                role="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
+              <a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Categories
               </a>
               <ul className="dropdown-menu">
@@ -73,44 +104,35 @@ export default function Navbar() {
             </li>
           </ul>
 
-          {/* Right side menu */}
-          <div className="d-flex align-items-center">
+          <div className="d-flex align-items-center flex-column flex-lg-row mt-2 mt-lg-0">
             {/* Cart */}
-            <a href="/usercart" className="btn btn-outline-primary me-2 position-relative">
+            <a href="/usercart" className="btn btn-outline-primary me-lg-2 mb-2 mb-lg-0 position-relative" title="Cart">
               <i className="bi bi-cart3"></i>
-              {cartCount > 0 && (
-                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                  {cartCount}
+              <span className="d-none d-lg-inline ms-1">Cart</span>
+              {displayCount > 0 && (
+                <span className={`position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger ${pulse ? styles.pulse : ''}`}>
+                  <span className={`${styles['cart-badge-number']} ${countClass}`}>
+                    {displayCount}
+                  </span>
                   <span className="visually-hidden">items in cart</span>
                 </span>
               )}
             </a>
 
-            {/* Auth */}
             {isLoggedIn ? (
-              <div className="dropdown">
-                <button
-                  className="btn btn-outline-secondary dropdown-toggle"
-                  type="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
+              <>
+                <a href="/user/profile" className="btn btn-outline-secondary me-lg-2 mb-2 mb-lg-0" title="Dashboard">
                   <i className="bi bi-person-circle"></i>
+                  <span className="d-none d-lg-inline ms-1">Dashboard</span>
+                </a>
+                <button className="btn btn-danger mb-2 mb-lg-0" onClick={handleLogout} title="Logout">
+                  <i className="bi bi-box-arrow-right"></i>
+                  <span className="d-none d-lg-inline ms-1">Logout</span>
                 </button>
-                <ul className="dropdown-menu dropdown-menu-end">
-                  <li><a className="dropdown-item" href="/user/profile">Dashboard</a></li>
-                  <li><a className="dropdown-item" href="/user/orders">Orders</a></li>
-                  <li><hr className="dropdown-divider" /></li>
-                  <li>
-                    <button className="dropdown-item text-danger" onClick={handleLogout}>
-                      Logout
-                    </button>
-                  </li>
-                </ul>
-              </div>
+              </>
             ) : (
               <>
-                <a href="/auth/login" className="btn btn-outline-primary me-2">Login</a>
+                <a href="/auth/login" className="btn btn-outline-primary me-lg-2 mb-2 mb-lg-0">Login</a>
                 <a href="/auth/register" className="btn btn-primary">Register</a>
               </>
             )}

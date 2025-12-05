@@ -1,91 +1,54 @@
 'use client';
-import { useEffect, useState } from 'react';
+
+import { useCart } from '@/contexts/CartContext';
 
 export default function UserCart() {
-  const [cart, setCart] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { cart, setCart } = useCart();
 
-  // Fetch cart for logged-in user
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
+  if (!cart || cart.items.length === 0) return <p>Your cart is empty.</p>;
 
-    fetch('/api/cart/user', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-      .then(res => res.json())
-      .then(data => {
-        setCart(data);
-        setLoading(false);
+  async function updateItem(productId, action) {
+    try {
+      const res = await fetch('/api/cart/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId, action })
       });
-  }, []);
 
-  const updateQuantity = async (id, qty) => {
-    const token = localStorage.getItem('token');
-    const newCart = cart.map(item => item.id === id ? { ...item, quantity: qty } : item);
-    setCart(newCart);
+      const data = await res.json();
+      if (res.ok) {
+        setCart(data.cart);
+      } else {
+        alert(data.message);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to update cart');
+    }
+  }
 
-    await fetch('/api/cart/user', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ items: newCart })
-    });
-  };
-
-  const removeItem = async (id) => {
-    const token = localStorage.getItem('token');
-    const newCart = cart.filter(item => item.id !== id);
-    setCart(newCart);
-
-    await fetch('/api/cart/user', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ items: newCart })
-    });
-  };
-
-  if (loading) return <p>Loading cart...</p>;
-  if (cart.length === 0) return <p>Your cart is empty.</p>;
-
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total = cart.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
   return (
     <div>
-      <h3>My Cart</h3>
-      <table className="table">
-        <thead>
-          <tr>
-            <th>Product</th>
-            <th>Qty</th>
-            <th>Price</th>
-            <th>Remove</th>
-          </tr>
-        </thead>
-        <tbody>
-          {cart.map(item => (
-            <tr key={item.id}>
-              <td>{item.name}</td>
-              <td>
-                <input 
-                  type="number" 
-                  value={item.quantity} 
-                  min="1" 
-                  onChange={(e) => updateQuantity(item.id, parseInt(e.target.value))}
-                />
-              </td>
-              <td>₦{(item.price * item.quantity).toLocaleString()}</td>
-              <td>
-                <button className="btn btn-sm btn-danger" onClick={() => removeItem(item.id)}>Remove</button>
-              </td>
-            </tr>
-          ))}
-          <tr>
-            <td colSpan="2" className="fw-bold">Total</td>
-            <td colSpan="2" className="fw-bold">₦{total.toLocaleString()}</td>
-          </tr>
-        </tbody>
-      </table>
-      <a href="/checkout" className="btn btn-primary">Proceed to Checkout</a>
+      {cart.items.map((item) => (
+        <div key={item.productId} className="d-flex justify-content-between align-items-center mb-2">
+          <div>
+            <strong>{item.name}</strong> x {item.quantity}
+          </div>
+          <div className="d-flex gap-2">
+            <button className="btn btn-sm btn-outline-secondary" onClick={() => updateItem(item.productId, 'decrease')}>-</button>
+            <button className="btn btn-sm btn-outline-secondary" onClick={() => updateItem(item.productId, 'increase')}>+</button>
+            <button className="btn btn-sm btn-outline-danger" onClick={() => updateItem(item.productId, 'remove')}>Remove</button>
+            <span>₦{item.price * item.quantity}</span>
+          </div>
+        </div>
+      ))}
+      <hr />
+      <div className="d-flex justify-content-between fw-bold">
+        <span>Total:</span>
+        <span>₦{total}</span>
+      </div>
     </div>
   );
 }

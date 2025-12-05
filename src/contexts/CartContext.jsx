@@ -1,55 +1,54 @@
 'use client';
+
 import { createContext, useContext, useState, useEffect } from 'react';
 
 const CartContext = createContext();
 
-export const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState([]);
+export function CartProvider({ children }) {
+  const [cart, setCart] = useState(null);
 
-  // Load cart from localStorage on mount
+  // Optional: load cart on mount
   useEffect(() => {
-    const storedCart = localStorage.getItem('cart');
-    if (storedCart) setCart(JSON.parse(storedCart));
+    async function fetchCart() {
+      try {
+        const res = await fetch('/api/cart/get'); // create a GET API route
+        const data = await res.json();
+        if (res.ok) setCart(data.cart);
+      } catch (err) {
+        console.error('Fetch cart error:', err);
+      }
+    }
+    fetchCart();
   }, []);
 
-  // Save cart to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart));
-  }, [cart]);
+  async function addToCart(product) {
+    try {
+      const res = await fetch('/api/cart/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: product._id })
+      });
 
-  const addToCart = (product) => {
-    setCart((prev) => {
-      const existing = prev.find((p) => p.id === product.id);
-      if (existing) {
-        return prev.map((p) =>
-          p.id === product.id ? { ...p, quantity: p.quantity + 1 } : p
-        );
+      const data = await res.json();
+
+      if (res.ok) {
+        setCart(data.cart);
+        alert(`${product.name} added to cart`);
+      } else {
+        alert(data.message);
       }
-      return [...prev, { ...product, quantity: 1 }];
-    });
-  };
-
-  const removeFromCart = (productId) => {
-    setCart((prev) => prev.filter((p) => p.id !== productId));
-  };
-
-  const updateQuantity = (productId, quantity) => {
-    setCart((prev) =>
-      prev.map((p) =>
-        p.id === productId ? { ...p, quantity: Math.max(1, quantity) } : p
-      )
-    );
-  };
-
-  const clearCart = () => setCart([]);
+    } catch (err) {
+      console.error('Add to cart error:', err);
+      alert('Failed to add to cart');
+    }
+  }
 
   return (
-    <CartContext.Provider
-      value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart }}
-    >
-      {children}
-    </CartContext.Provider>
+  <CartContext.Provider value={{ cart, addToCart, setCart }}>
+  {children}
+</CartContext.Provider>
   );
-};
+
+}
 
 export const useCart = () => useContext(CartContext);

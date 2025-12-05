@@ -1,30 +1,43 @@
-import clientPromise from '@/lib/database';
-import bcrypt from 'bcryptjs';
+import clientPromise from "@/lib/database";
+import bcrypt from "bcryptjs";
 
 export async function createUser({ name, email, password }) {
-  const client = await clientPromise;
-  const db = client.db('bakos-collection');
+  try {
+    const client = await clientPromise;
+    const db = client.db("bakos-collection");
+    const users = db.collection("users");
 
-  // Check if user already exists
-  const existingUser = await db.collection('users').findOne({ email });
-  if (existingUser) throw new Error('User already exists');
+    const existingUser = await users.findOne({ email });
+    if (existingUser) throw new Error("User already exists");
 
-  // Hash password
-  const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-  const result = await db.collection('users').insertOne({
-    name,
-    email,
-    password: hashedPassword,
-    createdAt: new Date()
-  });
+    const result = await users.insertOne({
+      name,
+      email,
+      password: hashedPassword,
+      createdAt: new Date(),
+    });
 
-  return { id: result.insertedId, name, email };
+    return {
+      id: result.insertedId.toString(),
+      name,
+      email,
+    };
+  } catch (error) {
+    console.error("Create user error:", error);
+    throw error;
+  }
 }
 
 export async function findUserByEmail(email) {
-  const client = await clientPromise;
-  const db = client.db('bakos-collection');
+  try {
+    const client = await clientPromise;
+    const db = client.db("bakos-collection");
 
-  return await db.collection('users').findOne({ email });
+    return await db.collection("users").findOne({ email });
+  } catch (error) {
+    console.error("Find user error:", error);
+    throw error;
+  }
 }
