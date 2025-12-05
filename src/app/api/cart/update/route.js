@@ -1,11 +1,9 @@
 import Cart from '@/models/Cart';
-import { connectDB } from '@/lib/database';
+import clientPromise from '@/lib/database';
 import { verifyAuth } from '@/lib/auth';
 
 export async function POST(req) {
   try {
-    await connectDB();
-
     const token = await verifyAuth(req);
     if (!token) {
       return new Response(JSON.stringify({ message: 'Unauthorized' }), { status: 401 });

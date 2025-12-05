@@ -1,34 +1,35 @@
 // src/lib/database.js
-import mongoose from 'mongoose';
 import { MongoClient } from 'mongodb';
 
-let isConnected = false;
-
-if (!process.env.MONGODB_URI) {
-  throw new Error("❌ MONGODB_URI is missing in environment variables");
-}
-
-const uri = process.env.MONGODB_URI;
+const uri = process.env.MONGODB_URI || '';
 
 let client;
-let clientPromise;
+let clientPromise = null;
 
-if (!uri) {
-  throw new Error("❌ MONGODB_URI is missing in environment variables");
-}
-
-if (process.env.NODE_ENV === 'development') {
-  if (!global._mongoClientPromise) {
+if (uri) {
+  if (process.env.NODE_ENV === 'development') {
+    if (!global._mongoClientPromise) {
+      client = new MongoClient(uri);
+      global._mongoClientPromise = client.connect();
+    }
+    clientPromise = global._mongoClientPromise;
+  } else {
     client = new MongoClient(uri);
-    global._mongoClientPromise = client.connect();
+    clientPromise = client.connect();
   }
-  clientPromise = global._mongoClientPromise;
 } else {
-  client = new MongoClient(uri);
-  clientPromise = client.connect();
+  // Don't throw during module import — this can run during build where env vars
+  // may not be available. Log a warning instead; runtime calls should still
+  // handle the missing URI where appropriate.
+  console.warn('MONGODB_URI is not set. Database client will not be initialized.');
 }
 
 export default clientPromise;
+
+// For compatibility with routes that use connectDB
+export const connectDB = async () => {
+  return await clientPromise;
+};
 
 export async function connectDB() {
   if (isConnected) {

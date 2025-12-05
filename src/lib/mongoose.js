@@ -1,3 +1,8 @@
-import { connectDB } from './database';
+import clientPromise from './database';
 
-export default connectDB;
+// Mongoose-style dbConnect function for compatibility
+const dbConnect = async () => {
+  return await clientPromise;
+};
+
+export default dbConnect;
