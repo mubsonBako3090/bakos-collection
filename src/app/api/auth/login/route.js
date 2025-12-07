@@ -1,3 +1,4 @@
+// src/app/api/auth/login/route.js
 import { findUserByEmail } from '@/lib/models/user';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -16,9 +17,8 @@ export async function POST(req) {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return new Response(JSON.stringify({ error: 'Invalid credentials' }), { status: 401 });
 
-    // Sign JWT
     const token = jwt.sign(
-      { id: user._id, name: user.name, email: user.email },
+      { userId: user._id.toString(), name: user.name, email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
