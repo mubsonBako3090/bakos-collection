@@ -1,3 +1,4 @@
+// src/app/api/auth/register/route.js
 import { createUser } from '@/lib/models/user';
 
 export async function POST(req) {
@@ -18,4 +19,3 @@ export async function POST(req) {
     return new Response(JSON.stringify({ error: error.message }), { status: 400 });
   }
 }
-
