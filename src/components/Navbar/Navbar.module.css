@@ -91,3 +91,29 @@
   transform: translateY(10px);
   opacity: 0;
 }
+/* Navbar.module.css */
+
+/* Smooth dropdown animation */
+.dropdownMenu {
+  display: block; /* keep block for positioning */
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+  padding: 0; /* remove padding when closed */
+  margin: 0;
+}
+
+.dropdownMenu.show {
+  max-height: 500px; /* large enough to fit all items */
+  padding: 0.5rem 0; /* restore vertical padding */
+}
+
+/* Optional: add smooth fade */
+.dropdownMenu li {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.dropdownMenu.show li {
+  opacity: 1;
+  }
