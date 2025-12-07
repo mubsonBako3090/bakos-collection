@@ -139,8 +139,10 @@ export default function Navbar() {
               >
                 Categories
               </a>
-              <ul className={`dropdown-menu ${isCategoriesOpen ? 'show' : ''}`}>
-                <li><a className="dropdown-item" href="/products/category/art">Art</a></li>
+              <ul
+  className={`${styles.dropdownMenu} ${isCategoriesOpen ? styles.show : ''}`}
+>
+              <li><a className="dropdown-item" href="/products/category/art">Art</a></li>
                 <li><a className="dropdown-item" href="/products/category/fashion">Fashion</a></li>
                 <li><a className="dropdown-item" href="/products/category/phones">Phones</a></li>
                 <li><a className="dropdown-item" href="/products/category/digital">Digital Assets</a></li>
