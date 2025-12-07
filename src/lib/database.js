@@ -1,34 +1,22 @@
 // src/lib/database.js
 import { MongoClient } from 'mongodb';
 
-const uri = process.env.MONGODB_URI || '';
+const uri = process.env.MONGODB_URI;
+if (!uri) throw new Error('MONGODB_URI is missing in .env');
 
 let client;
-let clientPromise = null;
+let clientPromise;
 
-if (uri) {
-  if (process.env.NODE_ENV === 'development') {
-    // Use global cache in development to avoid multiple connections
-    if (!global._mongoClientPromise) {
-      client = new MongoClient(uri);
-      global._mongoClientPromise = client.connect();
-    }
-    clientPromise = global._mongoClientPromise;
-  } else {
-    // Use a new client in production
+if (process.env.NODE_ENV === 'development') {
+  // Avoid multiple connections in dev
+  if (!global._mongoClientPromise) {
     client = new MongoClient(uri);
-    clientPromise = client.connect();
+    global._mongoClientPromise = client.connect();
   }
+  clientPromise = global._mongoClientPromise;
 } else {
-  console.warn('⚠️ Warning: MONGODB_URI is not set.');
+  client = new MongoClient(uri);
+  clientPromise = client.connect();
 }
 
 export default clientPromise;
-
-// For compatibility with connectDB() calls in API routes
-export async function connectDB() {
-  if (!clientPromise) {
-    throw new Error('❌ Cannot connect: MONGODB_URI is missing.');
-  }
-  return await clientPromise;
-}
