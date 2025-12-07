@@ -8,25 +8,27 @@ let clientPromise = null;
 
 if (uri) {
   if (process.env.NODE_ENV === 'development') {
+    // Use global cache in development to avoid multiple connections
     if (!global._mongoClientPromise) {
       client = new MongoClient(uri);
       global._mongoClientPromise = client.connect();
     }
     clientPromise = global._mongoClientPromise;
   } else {
+    // Use a new client in production
     client = new MongoClient(uri);
     clientPromise = client.connect();
   }
 } else {
-  // Don't throw during module import — this can run during build where env vars
-  // may not be available. Log a warning instead; runtime calls should still
-  // handle the missing URI where appropriate.
-  console.warn('MONGODB_URI is not set. Database client will not be initialized.');
+  console.warn('⚠️ Warning: MONGODB_URI is not set.');
 }
 
 export default clientPromise;
 
-// For compatibility with routes that use connectDB
+// For compatibility with connectDB() calls in API routes
 export async function connectDB() {
+  if (!clientPromise) {
+    throw new Error('❌ Cannot connect: MONGODB_URI is missing.');
+  }
   return await clientPromise;
 }
