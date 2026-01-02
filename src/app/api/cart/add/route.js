@@ -1,6 +1,5 @@
-// src/app/api/cart/add/route.js
 import Cart from '@/models/Cart';
-import Product from '@/models/product';
+import { getProductById } from '@/models/product';
 import clientPromise from '@/lib/database';
 import { verifyAuth } from '@/lib/auth';
 
@@ -14,7 +13,7 @@ export async function POST(req) {
     const userId = token.id;
     const { productId } = await req.json();
 
-    const product = await Product.findById(productId);
+    const product = await getProductById(productId);
     if (!product) {
       return new Response(JSON.stringify({ message: "Product not found" }), { status: 404 });
     }
@@ -27,7 +26,9 @@ export async function POST(req) {
         items: [{ productId, name: product.name, price: product.price }]
       });
     } else {
-      const itemIndex = cart.items.findIndex(i => i.productId.toString() === productId);
+      const itemIndex = cart.items.findIndex(
+        i => i.productId.toString() === productId
+      );
 
       if (itemIndex > -1) {
         cart.items[itemIndex].quantity += 1;
