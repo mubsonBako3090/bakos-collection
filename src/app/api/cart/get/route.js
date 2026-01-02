@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import dbConnect from '@/lib/mongoose'; 
 import Cart from '@/models/Cart';
 import { verifyAuth } from '@/lib/auth';
