@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import Cart from '@/models/Cart';
 import { getProductById } from '@/models/product';
 import clientPromise from '@/lib/database';
