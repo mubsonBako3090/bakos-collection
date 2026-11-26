@@ -1,66 +1,33 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import AOS from 'aos';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import ProductCard from '@/components/ProductCard/ProductCard';
 import styles from '@/styles/Home.module.css';
-import Navbar from './Navbar/Navbar';
+import { CATEGORIES } from '@/lib/categories';
 
 export default function LandingPage() {
+  const [featured, setFeatured] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
   useEffect(() => {
-    AOS.init({ duration: 1000 });
+    AOS.init({ duration: 1000, once: true });
   }, []);
 
-  const featuredProducts = [
-    {
-      id: 1,
-      name: 'Premium Art Piece',
-      price: 15000,
-      category: 'Art',
-      image: '/gool.jpg',
-    },
-    {
-      id: 2,
-      name: 'Designer Fashion',
-      price: 8000,
-      category: 'Fashion',
-      image: '/art/art.webp',
-    },
-    {
-      id: 3,
-      name: 'Smartphone',
-      price: 120000,
-      category: 'Consumer Electronics',
-      image: '/2.jpg',
-    },
-     {
-      id: 4,
-      name: 'furnitures',
-      price: 80000,
-      category: 'Fashion',
-      image: '/1.jpg',
-    },
-    {
-      id: 5,
-      name: 'furnitures',
-      price: 80000,
-      category: 'Fashion',
-      image: '/too.png',
-    },
-    {
-      id: 6,
-      name: 'furnitures',
-      price: 80000,
-      category: 'Fashion',
-      image: '/3.webp',
-    },
-  ];
+  // Featured products come from the database so "Add to cart" works for every card.
+  useEffect(() => {
+    fetch('/api/products?limit=6')
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('Failed'))))
+      .then(setFeatured)
+      .catch(() => setError('Could not load products right now.'))
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <div className={styles.container}>
-      <Navbar />
-
       <div className="container-fluid">
         <div className="row">
           <div className="col-md-3">
@@ -68,53 +35,43 @@ export default function LandingPage() {
           </div>
 
           <div className="col-md-9">
-            {/* Hero Section */}
             <section className={`${styles.hero} mb-5`} data-aos="fade-up">
               <div className={styles.heroContent}>
-                <h1>Welcome to Bako's Collection</h1>
-                <p>Discover the best in Art, Fashion, Digital Assets & More</p>
-                <button className="btn btn-primary btn-lg">Shop Now</button>
+                <h1>Welcome to Bako&apos;s Collection</h1>
+                <p>Discover the best in Art, Fashion, Digital Assets &amp; More</p>
+                <Link href="/products" className="btn btn-primary btn-lg">Shop Now</Link>
               </div>
             </section>
 
-            {/* Featured Products */}
             <section data-aos="fade-up">
               <h2 className="mb-4">Featured Products</h2>
+              {loading && <p className="text-muted">Loading products…</p>}
+              {error && <p className="text-danger">{error}</p>}
+              {!loading && !error && featured.length === 0 && (
+                <p className="text-muted">No products yet. Check back soon.</p>
+              )}
               <div className="row">
-                {featuredProducts.map((product) => (
-                  <div key={product.id} className="col-lg-4 col-md-6 mb-4">
+                {featured.map((product) => (
+                  <div key={product._id} className="col-lg-4 col-md-6 mb-4">
                     <ProductCard product={product} />
                   </div>
                 ))}
               </div>
             </section>
 
-            {/* Categories Section */}
             <section className="my-5" data-aos="fade-up">
               <h2 className="mb-4">Shop by Category</h2>
               <div className="row">
-                {[
-                  'Art',
-                  'Fashion',
-                  'Phones',
-                  'Digital Assets',
-                  'Game Items',
-                  `furnitures`,
-                  `Beauty & Personal Care`,
-                  `Groceries & Everyday Essentials`,
-                  `Automobile Accessories`,
-                ].map((category, index) => (
-                  <div key={category} className="col-md-2 col-6 mb-3">
-                    <div
-                      className={`card ${styles.categoryCard}`}
-                      data-aos="zoom-in"
-                      data-aos-delay={index * 100}
-                    >
-                      <div className="card-body text-center">
-                        <i className="bi bi-tag fs-1"></i>
-                        <h6 className="mt-2">{category}</h6>
+                {CATEGORIES.map((category) => (
+                  <div key={category.slug} className="col-md-3 col-6 mb-3">
+                    <Link href={`/products?category=${category.slug}`} className="text-decoration-none text-body">
+                      <div className={`card h-100 ${styles.categoryCard}`}>
+                        <div className="card-body text-center">
+                          <i className={`bi ${category.icon} fs-1`}></i>
+                          <h6 className="mt-2">{category.name}</h6>
+                        </div>
                       </div>
-                    </div>
+                    </Link>
                   </div>
                 ))}
               </div>
