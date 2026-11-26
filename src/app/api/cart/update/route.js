@@ -1,41 +1,19 @@
-import Cart from '@/models/Cart';
-import clientPromise from '@/lib/database';
-import { verifyAuth } from '@/lib/auth';
+import { requireUser } from '@/lib/auth';
+import { loadCart, updateCartItem } from '@/lib/cart';
+import { handleError, json, readJson } from '@/lib/http';
 
+export const dynamic = 'force-dynamic';
+
+// body: { productId, action: 'increase' | 'decrease' | 'remove' }
 export async function POST(req) {
   try {
-    const token = await verifyAuth(req);
-    if (!token) {
-      return new Response(JSON.stringify({ message: 'Unauthorized' }), { status: 401 });
-    }
+    const user = await requireUser();
+    const { productId, action } = await readJson(req);
+    const userId = String(user._id);
 
-    const userId = token.id;
-    const { productId, action } = await req.json();
-    // action: 'increase' | 'decrease' | 'remove'
-
-    const cart = await Cart.findOne({ user: userId });
-    if (!cart) return new Response(JSON.stringify({ message: 'Cart not found' }), { status: 404 });
-
-    const itemIndex = cart.items.findIndex(i => i.productId.toString() === productId);
-    if (itemIndex === -1) return new Response(JSON.stringify({ message: 'Item not in cart' }), { status: 404 });
-
-    if (action === 'increase') {
-      cart.items[itemIndex].quantity += 1;
-    } else if (action === 'decrease') {
-      cart.items[itemIndex].quantity -= 1;
-      if (cart.items[itemIndex].quantity <= 0) {
-        cart.items.splice(itemIndex, 1);
-      }
-    } else if (action === 'remove') {
-      cart.items.splice(itemIndex, 1);
-    } else {
-      return new Response(JSON.stringify({ message: 'Invalid action' }), { status: 400 });
-    }
-
-    await cart.save();
-    return new Response(JSON.stringify({ cart }), { status: 200 });
+    await updateCartItem(userId, productId, action);
+    return json({ cart: await loadCart(userId) });
   } catch (err) {
-    console.error('Update cart error:', err);
-    return new Response(JSON.stringify({ message: 'Server error' }), { status: 500 });
+    return handleError(err);
   }
-} 
+}
