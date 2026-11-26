@@ -1,30 +1,48 @@
-// src/app/api/auth/me/route.js
-import clientPromise from '@/lib/database';
-import jwt from 'jsonwebtoken';
 import { ObjectId } from 'mongodb';
+import { getCurrentUser, publicUser, requireUser } from '@/lib/auth';
+import { getDb } from '@/lib/database';
+import { ApiError, handleError, json, readJson } from '@/lib/http';
+import { cleanText, isValidPhone } from '@/lib/validate';
 
-export async function GET(req) {
+export const dynamic = 'force-dynamic';
+
+// Returns { user: null } (HTTP 200) for guests so the browser console isn't full of 401s.
+export async function GET() {
   try {
-    const authHeader = req.headers.get('authorization');
-    if (!authHeader) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+    const user = await getCurrentUser();
+    return json({ user: user ? publicUser(user) : null });
+  } catch (err) {
+    return handleError(err);
+  }
+}
 
-    const token = authHeader.split(' ')[1];
-    if (!token) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+// Update the profile. Only whitelisted fields can change (never role/password/email).
+export async function PUT(req) {
+  try {
+    const user = await requireUser();
+    const body = await readJson(req);
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const update = {
+      name: cleanText(body.name, 100),
+      phone: cleanText(body.phone, 20),
+      address: cleanText(body.address),
+      city: cleanText(body.city, 100),
+      state: cleanText(body.state, 100),
+      zip: cleanText(body.zip, 20),
+    };
+    if (!update.name) throw new ApiError(400, 'Name cannot be empty.');
+    if (update.phone && !isValidPhone(update.phone)) throw new ApiError(400, 'Please enter a valid phone number.');
 
-    const client = await clientPromise;
-    const db = client.db('bakos-collection');
-
-    const user = await db.collection('users').findOne(
-      { _id: new ObjectId(decoded.userId) },
-      { projection: { password: 0 } }
-    );
-
-    if (!user) return new Response(JSON.stringify({ error: 'User not found' }), { status: 404 });
-
-    return new Response(JSON.stringify(user), { status: 200 });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 401 });
+    const db = await getDb();
+    const updated = await db
+      .collection('users')
+      .findOneAndUpdate(
+        { _id: new ObjectId(user._id) },
+        { $set: update },
+        { returnDocument: 'after', projection: { password: 0 } }
+      );
+    return json({ user: publicUser(updated) });
+  } catch (err) {
+    return handleError(err);
   }
 }
