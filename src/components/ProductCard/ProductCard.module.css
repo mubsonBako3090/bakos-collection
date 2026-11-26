@@ -58,20 +58,6 @@
   box-shadow: 0 4px 10px rgba(255, 77, 109, 0.4);
 }
 
-/* Text Styling */
-.card-title {
-  font-weight: 600;
-}
-
-.card-text {
-  margin-bottom: 8px;
-}
-
-/* Buttons inside card */
-.btn-outline-primary {
-  border-radius: 8px;
-}
-
 /* Mobile Adjustments */
 @media (max-width: 768px) {
   .imageContainer {
