@@ -1,24 +1,16 @@
-import getClientPromise from '@/lib/database';
+import { requireAdmin } from '@/lib/auth';
+import { getDb } from '@/lib/database';
+import { handleError, json } from '@/lib/http';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const client = await getClientPromise();
-    const db = client.db('bakos-collection');
-
-    const orders = await db
-      .collection('orders')
-      .find()
-      .sort({ createdAt: -1 })
-      .toArray();
-
-    return new Response(JSON.stringify(orders), { status: 200 });
-  } catch (error) {
-    console.error(error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500 }
-    );
+    await requireAdmin();
+    const db = await getDb();
+    const orders = await db.collection('orders').find({}).sort({ createdAt: -1 }).limit(500).toArray();
+    return json(orders);
+  } catch (err) {
+    return handleError(err);
   }
 }
