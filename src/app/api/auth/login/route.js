@@ -1,30 +1,27 @@
-// src/app/api/auth/login/route.js
-import { findUserByEmail } from '@/lib/models/user';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import { NextResponse } from 'next/server';
+import { COOKIE_NAME, cookieOptions, publicUser, signToken } from '@/lib/auth';
+import { ApiError, handleError, readJson } from '@/lib/http';
+import { findUserByEmail } from '@/lib/users';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(req) {
   try {
-    const { email, password } = await req.json();
-
-    if (!email || !password) {
-      return new Response(JSON.stringify({ error: 'Missing fields' }), { status: 400 });
+    const { email, password } = await readJson(req);
+    if (typeof email !== 'string' || typeof password !== 'string') {
+      throw new ApiError(400, 'Email and password are required.');
     }
 
     const user = await findUserByEmail(email);
-    if (!user) return new Response(JSON.stringify({ error: 'Invalid credentials' }), { status: 401 });
+    // Same message for "no such user" and "wrong password" so emails can't be probed.
+    const ok = user ? await bcrypt.compare(password, user.password) : false;
+    if (!ok) throw new ApiError(401, 'Invalid email or password.');
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return new Response(JSON.stringify({ error: 'Invalid credentials' }), { status: 401 });
-
-    const token = jwt.sign(
-      { userId: user._id.toString(), name: user.name, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-
-    return new Response(JSON.stringify({ message: 'Login successful', token }), { status: 200 });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    const res = NextResponse.json({ user: publicUser(user) });
+    res.cookies.set(COOKIE_NAME, signToken(user), cookieOptions);
+    return res;
+  } catch (err) {
+    return handleError(err);
   }
 }
