@@ -1,21 +1,14 @@
-// src/app/api/auth/register/route.js
-import { createUser } from '@/lib/models/user';
+import { createUser } from '@/lib/users';
+import { handleError, json, readJson } from '@/lib/http';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(req) {
   try {
-    const body = await req.json();
-    const { name, email, password } = body;
-
-    if (!name || !email || !password) {
-      return new Response(JSON.stringify({ error: 'Missing fields' }), { status: 400 });
-    }
-
+    const { name, email, password } = await readJson(req);
     const user = await createUser({ name, email, password });
-
-    return new Response(JSON.stringify({ message: 'User registered successfully', user }), {
-      status: 201
-    });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 400 });
+    return json({ message: 'Registration successful.', user }, 201);
+  } catch (err) {
+    return handleError(err);
   }
 }
