@@ -21,6 +21,7 @@
 }
 
 .item {
+  text-decoration: none;
   padding: 10px 12px;
   margin-bottom: 8px;
   border-radius: 8px;
@@ -41,18 +42,6 @@
   background: #9ca6c9;
   color: #003bb5;
   font-weight: 600;
-}
-
-.filterSection {
-  margin-top: 25px;
-}
-
-.filterLabel {
-  font-size: 0.85rem;
-  font-weight: 500;
-  margin-bottom: 5px;
-  display: block;
-  color: #555;
 }
 
 /* Mobile */
