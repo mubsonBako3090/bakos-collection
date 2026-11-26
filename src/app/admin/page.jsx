@@ -1,6 +1,5 @@
-import AdminLayout from "./layout";
+import { redirect } from 'next/navigation';
 
-export default function admin() {
-
-    <AdminLayout />
+export default function AdminHome() {
+  redirect('/admin/products');
 }
