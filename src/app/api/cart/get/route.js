@@ -1,23 +1,16 @@
+import { getCurrentUser } from '@/lib/auth';
+import { loadCart } from '@/lib/cart';
+import { handleError, json } from '@/lib/http';
+
 export const dynamic = 'force-dynamic';
-import dbConnect from '@/lib/mongoose'; 
-import Cart from '@/models/Cart';
-import { verifyAuth } from '@/lib/auth';
 
-export async function GET(req) {
+// Guests just get an empty cart (HTTP 200) rather than an error.
+export async function GET() {
   try {
-    await dbConnect(); // correct Mongoose connection
-
-    const token = verifyAuth(req);
-    const userId = token.id;
-
-    const cart = await Cart.findOne({ user: userId }).populate("items.productId");
-
-    return new Response(JSON.stringify({
-      cart: cart || { items: [] }
-    }), { status: 200 });
-
+    const user = await getCurrentUser();
+    if (!user) return json({ cart: { items: [], count: 0, total: 0 } });
+    return json({ cart: await loadCart(String(user._id)) });
   } catch (err) {
-    console.error("Get cart error:", err);
-    return new Response(JSON.stringify({ message: "Unauthorized" }), { status: 401 });
+    return handleError(err);
   }
 }
