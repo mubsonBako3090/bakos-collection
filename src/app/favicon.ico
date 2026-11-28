@@ -1,7 +1,0 @@
-export const metadata = {
-  title: "Bako's Collection - Nigeria E-Commerce",
-  description: 'Fashion | Digital Assets | Physical Products in Nigeria',
-  icons: {
-    icon: '/logo.png',
-  },
-};
